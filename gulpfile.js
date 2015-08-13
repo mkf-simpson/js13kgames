@@ -73,14 +73,14 @@ gulp.task('prepare-html', function () {
 });
 
 gulp.task('prepare-html-dev', function () {
+    var sources = gulp.src('./js/*.js')
+        .pipe(dependencies({
+            pattern: /@requires [\s-]*(.*?\.js)/g
+        }).on('error', utils.log))
+        .pipe(addsrc('./css/*.css'));
+
     return gulp.src('./game.html')
-        .pipe(inject(
-            gulp.src('./js/*.js')
-            .pipe(dependencies({
-                pattern: /@requires [\s-]*(.*?\.js)/g
-            }).on('error', utils.log))
-            .pipe(addsrc('./css/*.css'))
-        ))
+        .pipe(inject(sources, { relative: true }))
         .pipe(rename('index.html'))
         .pipe(gulp.dest('./'))
         .pipe(connect.reload());
