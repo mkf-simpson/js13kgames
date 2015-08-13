@@ -1,6 +1,7 @@
 //@requires configuration.js
 //@requires utils.js
 //@requires classes.js
+//@requires input-manager.js
 //@requires scene.js
 var canvas = document.querySelector('canvas'),
     context = canvas.getContext('2d'),
