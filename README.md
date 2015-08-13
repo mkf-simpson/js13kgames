@@ -17,6 +17,6 @@ Ready package will appear in `build` directory
 ##### Run in dev mode
 Run `gulp dev`
 
-Then open `index.html` in any browser
+Then open [http://localhost:8080](http://localhost:8080) in any browser
 
 *for livereload install [chrome extension](https://chrome.google.com/webstore/detail/livereload/jnihajbhpnppcggbcgedagnkighmdlei)*
