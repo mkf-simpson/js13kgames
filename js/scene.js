@@ -1,13 +1,21 @@
-function Scene (ctx) {
+function Scene (ctx, input) {
   this.ctx = ctx;
   this.children = [];
-
+  this.input = input;
 }
 
 Scene.prototype.add = function (child) {
   this.children.push(child);
   if (isFunction(child.init)) {
     child.init()
+  }
+};
+
+Scene.prototype.remove = function (child) {
+  var i = this.children.indexOf(child);
+  if (i >= 0) {
+    this.children.splice(i, 1);
+
   }
 };
 
@@ -18,6 +26,10 @@ Scene.prototype.draw = function () {
       child.draw(this.ctx)
     }
   }.bind(this))
+};
+
+Scene.prototype.clear = function () {
+  this.children.length = 0;
 };
 
 Scene.prototype.clearContext = function () {
