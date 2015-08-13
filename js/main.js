@@ -2,6 +2,7 @@
 //@requires utils.js
 //@requires classes.js
 //@requires input-manager.js
+//@requires player.js
 //@requires scene.js
 var canvas = document.querySelector('canvas'),
     context = canvas.getContext('2d'),
@@ -9,7 +10,10 @@ var canvas = document.querySelector('canvas'),
     scene = new Scene(context, input),
     lastTime = Date.now();
 
-scene.add(new Rectangle());
+var player = new Player();
+player.setForce(new Force(DOWN, 9.8), 'gravity');
+scene.add(player);
+
 
 canvas.width = Configuration.width;
 canvas.height = Configuration.height;
