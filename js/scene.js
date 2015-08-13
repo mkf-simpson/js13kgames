@@ -1,7 +1,7 @@
-function Scene (ctx) {
+function Scene (ctx, input) {
   this.ctx = ctx;
   this.children = [];
-
+  this.input = input;
 }
 
 Scene.prototype.add = function (child) {
