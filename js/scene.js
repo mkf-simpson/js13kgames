@@ -5,19 +5,17 @@ function Scene (ctx) {
 }
 
 Scene.prototype.add = function (child) {
-  this.children.push(child);
-  if (isFunction(child.init)) {
-    child.init()
-  }
+    if (!(child instanceof Drawable)) {
+        throw new Error('Object for scene must be subclass of Drawable');
+    }
+    this.children.push(child);
 };
 
 Scene.prototype.draw = function () {
-  this.clearContext();
+  // this.clearContext();
   this.children.forEach(function (child) {
-    if (isFunction(child.draw)) {
-      child.draw(this.ctx)
-    }
-  }.bind(this))
+      child.draw(this.ctx);
+  }.bind(this));
 };
 
 Scene.prototype.clearContext = function () {
@@ -26,8 +24,6 @@ Scene.prototype.clearContext = function () {
 
 Scene.prototype.update = function (dt) {
   this.children.forEach(function (child) {
-    if (isFunction(child.update)) {
-      child.update(dt)
-    }
-  })
+      child.update(dt);
+  });
 };
