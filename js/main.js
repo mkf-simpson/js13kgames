@@ -4,6 +4,7 @@
 //@requires scene.js
 //@requires rectangle.js
 //@requires solid.js
+//@requires world.js
 
 var canvas = document.querySelector('canvas'),
     context = canvas.getContext('2d'),
@@ -33,6 +34,25 @@ var solids = [
         isHookable: false,
         isCollidable: true,
         color: 'grey'
+    }),
+
+    new Solid({
+        position: new Point(-1000, 0),
+        size: new Size(1002, Configuration.height),
+        isHookable: true,
+        isCollidable: true
+    }),
+    new Solid({
+        position: new Point(0, -100),
+        size: new Size(Configuration.width * 100, 102),
+        isHookable: true,
+        isCollidable: true
+    }),
+    new Solid({
+        position: new Point(0, Configuration.height - 2),
+        size: new Size(Configuration.width * 100, 100),
+        isHookable: true,
+        isCollidable: true
     })
 ];
 
@@ -46,25 +66,34 @@ var rectangle = new Rectangle({
 rectangle.setForce(new Force(DOWN, 9.8), 'gravity');
 scene.add(rectangle);
 
-var loopTimer,
-    hook = null,
-    play = true,
+var hook = null,
     positions = [],
     hookPositions = [],
-    positionCounter = 0,
     slowMo = false;
 
 var frameRate = 1 / 60,
-    frameRateSlow = 1 / 240,
-    frameDelay = frameRate * 1000;
-
-var WORLD = {
-    rho: 1.22,
-    hookStrength: 20
-};
+    frameRateSlow = 1 / 240;
 
 function mainLoop () {
-    if (hook) {
+    var newOffset = 0;
+    if (rectangle.position.x + WORLD.offset.x > canvas.width * 0.6) {
+        newOffset = rectangle.position.x + WORLD.offset.x - canvas.width * 0.6;
+        WORLD.offset.x -= newOffset;
+    }
+
+    else if (rectangle.position.x + WORLD.offset.x < canvas.width * 0.4) {
+        var oldOffset = WORLD.offset.x;
+
+        WORLD.offset.x -= rectangle.position.x + WORLD.offset.x - canvas.width * 0.4;
+        if (WORLD.offset.x > 0) {
+            WORLD.offset.x = 0;
+            context.setTransform(1, 0, 0, 1, 0, 0);
+        } else {
+            newOffset = rectangle.position.x + oldOffset - canvas.width * 0.4;
+        }
+    }
+
+    if (hook && hook.isValid) {
         rectangle.setForce(new Force(Vector.fromPoints(rectangle.position, hook.position), WORLD.hookStrength), 'hook');
     }
 
@@ -82,40 +111,15 @@ function mainLoop () {
     rectangle.velocity.x += ax / WORLD.rho * frameRate;
     rectangle.velocity.y += ay / WORLD.rho * frameRate;
 
-    // if (rectangle.position.x > canvas.width * 0.6) {
-    //     worldOffset.x -= rectangle.position.x + worldOffset.x - canvas.width * 0.6;
-    // }
-
-    rectangle.position.x += rectangle.velocity.x * currentFrameRate*100;
-    rectangle.position.y += rectangle.velocity.y * currentFrameRate*100;
+    rectangle.position.x += rectangle.velocity.x * currentFrameRate * 100;
+    rectangle.position.y += rectangle.velocity.y * currentFrameRate * 100;
 
     var restitution = rectangle.restitution,
         friction = rectangle.friction;
 
-    if (rectangle.position.y >= canvas.height - rectangle.size.height) {
-        rectangle.velocity.y *= restitution;
-        rectangle.velocity.x *= friction;
-        rectangle.position.y = canvas.height - rectangle.size.height;
-    }
-    if (rectangle.position.x >= canvas.width - rectangle.size.width) {
-        rectangle.velocity.x *= restitution;
-        rectangle.velocity.y *= friction;
-        rectangle.position.x = canvas.width - rectangle.size.width;
-    }
-    if (rectangle.position.x <= rectangle.size.width)  {
-        rectangle.velocity.x *= restitution;
-        rectangle.velocity.y *= friction;
-        rectangle.position.x = rectangle.size.width;
-    }
-    if (rectangle.position.y <= rectangle.size.height) {
-        rectangle.velocity.y *= restitution;
-        rectangle.velocity.x *= friction;
-        rectangle.position.y = rectangle.size.height;
-    }
-
     var referencePoints = rectangle.referencePoints();
-
-    context.clearRect(0, 0, canvas.width, canvas.height);
+    context.translate(-newOffset, 0);
+    context.clearRect(-WORLD.offset.x, 0, canvas.width - WORLD.offset.x, canvas.height);
     for (var i = 0, len = solids.length; i < len; i++) {
         solids[i].draw(context);
 
@@ -177,8 +181,6 @@ function mainLoop () {
     }
 
     var now = Date.now();
-    var dt = (now - lastTime) / 1000.0;
-    // scene.update(dt);
     scene.draw(context);
 
     lastTime = now;
@@ -191,11 +193,13 @@ var mouseDownEvent = 'ontouchstart' in document.documentElement ? 'touchstart' :
 document.addEventListener(mouseDownEvent, function (event) {
     event.preventDefault();
     var coordinates = mouseDownEvent === 'touchstart' ? event.touches[0] : event;
-    console.log(canvas.width, canvas.height);
     hook = new Hook({
-        to: new Point(Math.min(coordinates.pageX - canvas.offsetLeft, canvas.width), Math.min(coordinates.pageY - canvas.offsetTop, canvas.height)),
+        to: new Point(Math.min(coordinates.pageX - canvas.offsetLeft - WORLD.offset.x, canvas.width - WORLD.offset.x), Math.min(coordinates.pageY - canvas.offsetTop, canvas.height)),
         from: rectangle.position
     });
+    if (!hook.isValid) {
+        hook = null;
+    }
     console.log(hook);
 });
 

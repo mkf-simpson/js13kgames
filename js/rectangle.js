@@ -40,18 +40,13 @@ Rectangle.prototype.square = function () {
 };
 
 Rectangle.prototype.draw = function (context) {
-    context.save();
-
-    context.translate(this.position.x, this.position.y);
     context.beginPath();
-    context.arc(0, 0, this.size.width, 0, Math.PI*2, true);
+    context.arc(this.position.x, this.position.y, this.size.width, 0, Math.PI*2, true);
     context.fillStyle = this.color;
     context.strokeStyle = 'black';
 
     context.fill();
     context.closePath();
-
-    context.restore();
 };
 
 Rectangle.prototype.referencePoints = function () {
